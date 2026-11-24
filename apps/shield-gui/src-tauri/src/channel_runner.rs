@@ -41,6 +41,8 @@ pub(crate) struct ChannelBatchResult {
     outputs: Vec<ChannelArtifact>,
 }
 
+type ChannelBatchOutcome = Result<ChannelBatchResult, ExecutionFailure>;
+
 #[tauri::command]
 pub(crate) async fn channel_get(apk_path: String) -> Result<Option<String>, String> {
     tokio::task::spawn_blocking(move || shield_core::read_channel(Path::new(&apk_path)))
@@ -99,7 +101,7 @@ pub(crate) async fn channel_batch(
     let progress_window = window.clone();
     let progress_task_id = request.task_id.clone();
     let cancel = Arc::clone(&cancel_handle.0);
-    let result = tokio::task::spawn_blocking(move || {
+    let result: ChannelBatchOutcome = tokio::task::spawn_blocking(move || {
         let outputs = shield_core::write_channels(
             Path::new(&request.input),
             &output_dir,
