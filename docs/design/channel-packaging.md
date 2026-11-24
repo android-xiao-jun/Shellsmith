@@ -55,6 +55,22 @@ shield channel batch --input <APK> --channels-file <FILE> [--output-dir <DIR>] [
 
 GUI：独立“渠道包”页面，支持选择 APK、读取当前渠道、导入 `channels.txt`、选择输出目录、覆盖开关、进度与取消。
 
+## Android 端读取
+
+业务工程通过 Walle library 读取渠道号：
+
+```gradle
+dependencies {
+    implementation 'com.meituan.android.walle:library:1.1.7'
+}
+```
+
+```java
+String channel = WalleChannelReader.getChannel(context, "default");
+```
+
+`com.meituan.android.walle:plugin:1.1.7` 及 `apply plugin: 'walle'` 仅在使用 Walle Gradle 插件生成渠道包时需要；Shellsmith 写入的渠道包不需要该插件，但读取仍需要 library。Walle 从 APK Signing Block 读取渠道，因此 APK 必须保持 V2/V3 签名。
+
 ## 验证
 
 - `crates/shield-core/src/channel.rs` 单元测试覆盖读取、替换、保留其他签名块条目、ZIP 注释、无签名块拒绝、非法/重复渠道、文件名安全化、覆盖策略与取消。

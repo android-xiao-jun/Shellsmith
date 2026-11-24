@@ -410,6 +410,38 @@ shield channel batch \
 
 渠道号写在 APK Signing Block 中，不会破坏 V2/V3 签名；写入后不得再修改、重新签名或对齐 APK。启用 V4 时原 `.idsig` 会失效，需要重新生成。
 
+#### Android 端接入
+
+运行时读取渠道号需要引入 Walle library。若同时使用 Walle Gradle 插件生成渠道包，再配置 plugin；Shellsmith 已经负责写渠道，业务工程只需要 library 即可读取。
+
+根目录 `build.gradle`：
+
+```gradle
+buildscript {
+    dependencies {
+        classpath 'com.meituan.android.walle:plugin:1.1.7'
+    }
+}
+```
+
+App 模块 `build.gradle`：
+
+```gradle
+apply plugin: 'walle'
+
+dependencies {
+    implementation 'com.meituan.android.walle:library:1.1.7'
+}
+```
+
+读取渠道：
+
+```java
+String channel = WalleChannelReader.getChannel(Utils.getApp(), "default");
+```
+
+`Utils.getApp()` 是 AndroidUtilCode 提供的 Application 上下文；其他工程直接传入 `Application` 或 `Context`。没有写入渠道时返回第二个参数 `default`。Walle 1.1.7 从 APK Signing Block 读取渠道，因此输入 APK 必须保持 V2/V3 签名。
+
 ### CLI 配置文件
 
 CLI 人工配置建议固定命名为 `shield-cli.toml`，与 GUI 自动维护的 `config.toml` 完全独立。当前格式版本为 `1`：
