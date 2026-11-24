@@ -591,9 +591,7 @@ fn sanitize_channel_for_filename(channel: &str) -> String {
             sanitized.push(ch);
         }
     }
-    let mut sanitized = sanitized
-        .trim_end_matches(|ch: char| ch == ' ' || ch == '.')
-        .to_string();
+    let mut sanitized = sanitized.trim_end_matches([' ', '.']).to_string();
     if sanitized.is_empty() {
         sanitized = "channel".to_string();
     }
@@ -630,7 +628,10 @@ fn is_windows_reserved_name(name: &str) -> bool {
 
 fn short_hash(value: &str) -> String {
     let digest = Sha256::digest(value.as_bytes());
-    digest[..4].iter().map(|byte| format!("{byte:02x}")).collect()
+    digest[..4]
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
 }
 
 fn read_u16(data: &[u8], offset: usize) -> u16 {
@@ -694,8 +695,7 @@ mod tests {
         output.extend_from_slice(&bytes[cd_offset..]);
         let new_eocd = eocd + block.len();
         let new_cd_offset = cd_offset + block.len();
-        output[new_eocd + 16..new_eocd + 20]
-            .copy_from_slice(&(new_cd_offset as u32).to_le_bytes());
+        output[new_eocd + 16..new_eocd + 20].copy_from_slice(&(new_cd_offset as u32).to_le_bytes());
         if !comment.is_empty() {
             output.extend_from_slice(comment);
             output[new_eocd + 20..new_eocd + 22]
@@ -767,11 +767,14 @@ mod tests {
         assert_eq!(read_channel(&output).unwrap().as_deref(), Some("oppo"));
 
         let pairs = read_pairs(&output);
-        assert!(pairs.iter().any(|(id, value)| {
-            *id == FAKE_V2_ID && value.as_slice() == b"fake-v2"
-        }));
+        assert!(pairs
+            .iter()
+            .any(|(id, value)| { *id == FAKE_V2_ID && value.as_slice() == b"fake-v2" }));
         assert_eq!(
-            pairs.iter().filter(|(id, _)| *id == CHANNEL_BLOCK_ID).count(),
+            pairs
+                .iter()
+                .filter(|(id, _)| *id == CHANNEL_BLOCK_ID)
+                .count(),
             1
         );
         assert_eq!(
@@ -865,10 +868,17 @@ mod tests {
         let channels = vec!["oppo".to_string(), "vivo".to_string()];
         let outputs = write_channels(&input, &output_dir, &channels, false, |_| {}, None).unwrap();
         assert_eq!(outputs.len(), 2);
-        assert_eq!(read_channel(&outputs[0].path).unwrap().as_deref(), Some("oppo"));
-        assert_eq!(read_channel(&outputs[1].path).unwrap().as_deref(), Some("vivo"));
+        assert_eq!(
+            read_channel(&outputs[0].path).unwrap().as_deref(),
+            Some("oppo")
+        );
+        assert_eq!(
+            read_channel(&outputs[1].path).unwrap().as_deref(),
+            Some("vivo")
+        );
 
-        let error = write_channels(&input, &output_dir, &channels, false, |_| {}, None).unwrap_err();
+        let error =
+            write_channels(&input, &output_dir, &channels, false, |_| {}, None).unwrap_err();
         assert!(matches!(error, ChannelError::OutputExists(_)));
         write_channels(&input, &output_dir, &channels, true, |_| {}, None).unwrap();
     }

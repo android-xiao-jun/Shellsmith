@@ -133,10 +133,7 @@ impl CliConfig {
     }
 
     pub(crate) fn merge_channel(&self, args: ChannelBatchArgs) -> Result<ResolvedChannelArgs> {
-        let input = required_path(
-            args.input.or_else(|| self.channel.input.clone()),
-            "--input",
-        )?;
+        let input = required_path(args.input.or_else(|| self.channel.input.clone()), "--input")?;
         let channels_file = required_path(
             args.channels_file
                 .or_else(|| self.channel.channels_file.clone()),
@@ -436,9 +433,7 @@ force = true
         .unwrap();
 
         let config = CliConfig::load(Some(&config_path)).unwrap();
-        let resolved = config
-            .merge_channel(ChannelBatchArgs::default())
-            .unwrap();
+        let resolved = config.merge_channel(ChannelBatchArgs::default()).unwrap();
         assert_eq!(resolved.input, temp.path().join("app.apk"));
         assert_eq!(resolved.channels_file, temp.path().join("channels.txt"));
         assert_eq!(resolved.output_dir, temp.path().join("out"));

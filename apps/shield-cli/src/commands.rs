@@ -1444,9 +1444,8 @@ pub(crate) fn run_channel_get(apk: PathBuf, json: bool) -> Result<()> {
 }
 
 pub(crate) fn run_channel_batch(args: ResolvedChannelArgs) -> Result<()> {
-    let text = std::fs::read_to_string(&args.channels_file).with_context(|| {
-        format!("读取渠道列表失败: {}", args.channels_file.display())
-    })?;
+    let text = std::fs::read_to_string(&args.channels_file)
+        .with_context(|| format!("读取渠道列表失败: {}", args.channels_file.display()))?;
     let channels = shield_core::parse_channel_list(&text)?;
     let json = args.json;
     let outputs = shield_core::write_channels(
