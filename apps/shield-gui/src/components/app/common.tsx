@@ -95,6 +95,20 @@ export function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
   );
 }
 
+export function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return (
+    <textarea
+      {...props}
+      className={cn(
+        "min-h-28 w-full resize-y rounded-xl border border-border/80 bg-background/90 px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground shadow-sm",
+        "min-w-0 font-mono leading-6",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+        props.className,
+      )}
+    />
+  );
+}
+
 export function SelectInput(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <select

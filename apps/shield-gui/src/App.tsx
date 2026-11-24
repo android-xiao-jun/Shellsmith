@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FolderKey, Info, LoaderCircle, PencilLine, Settings, ShieldCheck } from "lucide-react";
+import { FolderKey, Info, Layers, LoaderCircle, PencilLine, Settings, ShieldCheck } from "lucide-react";
 import { Toaster } from "sonner";
 import { AppSidebarHeader, UpdateBanner } from "@/components/app/common";
 import { UpdateDialog } from "@/components/app/update-dialog";
@@ -27,12 +27,13 @@ import { api, onTauriEvent, type BuildInfo, type TaskKind, type TaskSnapshot } f
 import { AboutPage } from "@/pages/about-page";
 import { AabProtectPage } from "@/pages/aab-protect-page";
 import { CertificatesPage } from "@/pages/certificates-page";
+import { ChannelPage } from "@/pages/channel-page";
 import { ProtectPage } from "@/pages/protect-page";
 import { IosProtectPage } from "@/pages/ios-protect-page";
 import { SettingsPage } from "@/pages/settings-page";
 import { SignPage } from "@/pages/sign-page";
 
-type Page = "protect" | "sign" | "certificates" | "settings" | "about";
+type Page = "protect" | "sign" | "channel" | "certificates" | "settings" | "about";
 
 export function App() {
   const [page, setPage] = useState<Page>("protect");
@@ -65,6 +66,7 @@ export function App() {
   const primaryNavItems = [
     { key: "protect" as const, icon: ShieldCheck, label: t(locale, "navProtect") },
     { key: "sign" as const, icon: PencilLine, label: t(locale, "navSign") },
+    { key: "channel" as const, icon: Layers, label: t(locale, "navChannel") },
     { key: "certificates" as const, icon: FolderKey, label: t(locale, "navCertificates") },
   ];
   const utilityNavItems = [
@@ -115,7 +117,7 @@ export function App() {
                       key={item.key}
                       page={page}
                       item={item}
-                      running={item.key === "protect" ? Boolean(runningTasks.protect || runningTasks.ios_protect) : item.key === "sign" ? runningTasks.sign : false}
+                      running={item.key === "protect" ? Boolean(runningTasks.protect || runningTasks.ios_protect) : item.key === "sign" ? runningTasks.sign : item.key === "channel" ? runningTasks.channel_pack : false}
                       onSelect={() => setPage(item.key)}
                     />
                   ))}
@@ -226,6 +228,9 @@ export function App() {
                 onOpenCertificates={() => setPage("certificates")}
               />
             </div>
+            <div className={page === "channel" ? undefined : "hidden"} aria-hidden={page !== "channel"}>
+              <ChannelPage active={page === "channel"} locale={locale} />
+            </div>
             {page === "certificates" && (
               <CertificatesPage
                 locale={locale}
@@ -257,7 +262,7 @@ export function App() {
           locale={locale}
           open={updateDialogOpen}
           updateInfo={updateInfo}
-          taskRunning={Boolean(runningTasks.protect || runningTasks.ios_protect || runningTasks.sign)}
+          taskRunning={Boolean(runningTasks.protect || runningTasks.ios_protect || runningTasks.sign || runningTasks.channel_pack)}
           onClose={() => void closeUpdateDialog()}
         />
         <ErrorReportDialog telemetryEnabled={telemetryEnabled} />

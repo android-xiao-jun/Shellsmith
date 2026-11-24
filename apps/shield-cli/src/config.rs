@@ -3,8 +3,8 @@ use serde::Deserialize;
 use std::path::{Path, PathBuf};
 
 use crate::args::{
-    AiResistanceArg, EnvironmentPolicyArg, KeystoreTypeArg, ProtectArgs, ProtectionProfileArg,
-    SignArgs,
+    AiResistanceArg, ChannelBatchArgs, EnvironmentPolicyArg, KeystoreTypeArg, ProtectArgs,
+    ProtectionProfileArg, SignArgs,
 };
 
 #[derive(Debug, Default, Deserialize)]
@@ -16,6 +16,8 @@ pub(crate) struct CliConfig {
     protect: ProtectConfig,
     #[serde(default)]
     sign: SignConfig,
+    #[serde(default)]
+    channel: ChannelConfig,
 }
 
 #[derive(Debug, Default, Deserialize)]
@@ -49,6 +51,16 @@ struct SignConfig {
     v2: Option<bool>,
     v3: Option<bool>,
     v4: Option<bool>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ChannelConfig {
+    input: Option<PathBuf>,
+    channels_file: Option<PathBuf>,
+    output_dir: Option<PathBuf>,
+    #[serde(default)]
+    force: bool,
 }
 
 impl CliConfig {
@@ -120,6 +132,35 @@ impl CliConfig {
         })
     }
 
+    pub(crate) fn merge_channel(&self, args: ChannelBatchArgs) -> Result<ResolvedChannelArgs> {
+        let input = required_path(
+            args.input.or_else(|| self.channel.input.clone()),
+            "--input",
+        )?;
+        let channels_file = required_path(
+            args.channels_file
+                .or_else(|| self.channel.channels_file.clone()),
+            "--channels-file",
+        )?;
+        let output_dir = args
+            .output_dir
+            .or_else(|| self.channel.output_dir.clone())
+            .unwrap_or_else(|| {
+                input
+                    .parent()
+                    .filter(|path| !path.as_os_str().is_empty())
+                    .unwrap_or_else(|| Path::new("."))
+                    .join("channels")
+            });
+        Ok(ResolvedChannelArgs {
+            input,
+            channels_file,
+            output_dir,
+            force: args.force || self.channel.force,
+            json: args.json,
+        })
+    }
+
     pub(crate) fn merge_sign(&self, args: SignArgs) -> Result<ResolvedSignArgs> {
         let ks_pass = args
             .ks_pass
@@ -161,6 +202,9 @@ impl CliConfig {
             &mut self.sign.output,
             &mut self.sign.keystore,
             &mut self.sign.apksigner,
+            &mut self.channel.input,
+            &mut self.channel.channels_file,
+            &mut self.channel.output_dir,
         ] {
             if let Some(value) = path.as_mut().filter(|value| value.is_relative()) {
                 *value = base.join(&*value);
@@ -207,6 +251,14 @@ pub(crate) struct ResolvedSignArgs {
     pub v2: bool,
     pub v3: bool,
     pub v4: bool,
+    pub json: bool,
+}
+
+pub(crate) struct ResolvedChannelArgs {
+    pub input: PathBuf,
+    pub channels_file: PathBuf,
+    pub output_dir: PathBuf,
+    pub force: bool,
     pub json: bool,
 }
 
@@ -363,6 +415,60 @@ output = "config-out.apk"
         let resolved = config.merge_protect(args).unwrap();
         assert_eq!(resolved.input, PathBuf::from("cli.apk"));
         assert_eq!(resolved.output, PathBuf::from("cli-out.apk"));
+    }
+
+    #[test]
+    fn 渠道配置按配置文件目录解析且命令行优先() {
+        let temp = tempfile::tempdir().unwrap();
+        let config_path = temp.path().join("shield-cli.toml");
+        std::fs::write(
+            &config_path,
+            r#"
+schema_version = 1
+
+[channel]
+input = "app.apk"
+channels_file = "channels.txt"
+output_dir = "out"
+force = true
+"#,
+        )
+        .unwrap();
+
+        let config = CliConfig::load(Some(&config_path)).unwrap();
+        let resolved = config
+            .merge_channel(ChannelBatchArgs::default())
+            .unwrap();
+        assert_eq!(resolved.input, temp.path().join("app.apk"));
+        assert_eq!(resolved.channels_file, temp.path().join("channels.txt"));
+        assert_eq!(resolved.output_dir, temp.path().join("out"));
+        assert!(resolved.force);
+
+        let cli = ChannelBatchArgs {
+            input: Some(PathBuf::from("cli.apk")),
+            channels_file: Some(PathBuf::from("cli.txt")),
+            output_dir: None,
+            force: false,
+            json: true,
+        };
+        let resolved = config.merge_channel(cli).unwrap();
+        assert_eq!(resolved.input, PathBuf::from("cli.apk"));
+        assert_eq!(resolved.channels_file, PathBuf::from("cli.txt"));
+        assert_eq!(resolved.output_dir, temp.path().join("out"));
+        assert!(resolved.json);
+    }
+
+    #[test]
+    fn 渠道输出目录默认位于输入_apk_同目录() {
+        let config: CliConfig = toml::from_str("schema_version = 1").unwrap();
+        let resolved = config
+            .merge_channel(ChannelBatchArgs {
+                input: Some(PathBuf::from("/tmp/app.apk")),
+                channels_file: Some(PathBuf::from("channels.txt")),
+                ..ChannelBatchArgs::default()
+            })
+            .unwrap();
+        assert_eq!(resolved.output_dir, PathBuf::from("/tmp/channels"));
     }
 
     #[test]

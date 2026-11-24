@@ -65,6 +65,8 @@ pub(crate) enum Commands {
     /// 使用 Xop Packer 的单壳运行时保护 APK；不会再叠加 Shellsmith 壳。
     ProtectXop(ProtectXopArgs),
     Sign(SignArgs),
+    /// 读取或批量写入 Walle 兼容渠道号；输入 APK 必须已使用 V2/V3 签名。
+    Channel(ChannelArgs),
     CheckApk {
         path: PathBuf,
         /// 可选 apksigner JAR；用于验证签名和读取证书。
@@ -130,6 +132,10 @@ impl Commands {
             Self::ProtectXop(args) => args.json,
             Self::ProtectIos(args) => args.json,
             Self::Sign(args) => args.json,
+            Self::Channel(args) => match &args.action {
+                ChannelAction::Get { json, .. } => *json,
+                ChannelAction::Batch(batch) => batch.json,
+            },
             Self::CheckApk { .. }
             | Self::CheckAab { .. }
             | Self::CheckIos { .. }
@@ -446,6 +452,43 @@ pub(crate) struct SignArgs {
     pub json: bool,
 }
 
+#[derive(Args)]
+pub(crate) struct ChannelArgs {
+    #[command(subcommand)]
+    pub action: ChannelAction,
+}
+
+#[derive(Subcommand)]
+pub(crate) enum ChannelAction {
+    /// 读取 APK 中已写入的渠道号；未写入时输出提示。
+    Get {
+        #[arg(value_name = "APK")]
+        apk: PathBuf,
+        #[arg(long)]
+        json: bool,
+    },
+    /// 按渠道列表批量产出 原文件名_渠道名.apk。
+    Batch(ChannelBatchArgs),
+}
+
+#[derive(Args, Default)]
+pub(crate) struct ChannelBatchArgs {
+    #[arg(short, long, value_name = "APK")]
+    pub input: Option<PathBuf>,
+    /// 渠道列表文件，每行一个渠道名。
+    #[arg(long, value_name = "FILE")]
+    pub channels_file: Option<PathBuf>,
+    /// 渠道包输出目录；默认是输入 APK 同目录下的 channels。
+    #[arg(long, value_name = "DIR")]
+    pub output_dir: Option<PathBuf>,
+    /// 覆盖已存在的同名渠道包。
+    #[arg(long)]
+    pub force: bool,
+    /// 每行输出一个 JSON 事件。
+    #[arg(long)]
+    pub json: bool,
+}
+
 /// APK/AAB 共用界面保护参数；Option 保留命令行覆盖配置文件的语义。
 #[derive(Args, Default)]
 pub struct RuntimeUiArgs {
@@ -515,6 +558,53 @@ impl RuntimeUiArgs {
             obfuscate_resource_names: Some(v.obfuscate_resource_names),
             resource_name_keep: Some(v.resource_name_keep),
             ui_packer,
+        }
+    }
+}
+
+#[cfg(test)]
+mod channel_tests {
+    use super::*;
+
+    #[test]
+    fn 渠道命令支持读取与批量写入() {
+        let parsed =
+            Cli::try_parse_from(["shield", "channel", "get", "app.apk", "--json"]).unwrap();
+        match parsed.command {
+            Commands::Channel(ChannelArgs {
+                action: ChannelAction::Get { apk, json },
+            }) => {
+                assert_eq!(apk, PathBuf::from("app.apk"));
+                assert!(json);
+            }
+            _ => panic!("应解析为渠道读取命令"),
+        }
+
+        let parsed = Cli::try_parse_from([
+            "shield",
+            "channel",
+            "batch",
+            "-i",
+            "app.apk",
+            "--channels-file",
+            "channels.txt",
+            "--output-dir",
+            "out",
+            "--force",
+            "--json",
+        ])
+        .unwrap();
+        match parsed.command {
+            Commands::Channel(ChannelArgs {
+                action: ChannelAction::Batch(batch),
+            }) => {
+                assert_eq!(batch.input, Some(PathBuf::from("app.apk")));
+                assert_eq!(batch.channels_file, Some(PathBuf::from("channels.txt")));
+                assert_eq!(batch.output_dir, Some(PathBuf::from("out")));
+                assert!(batch.force);
+                assert!(batch.json);
+            }
+            _ => panic!("应解析为渠道批量命令"),
         }
     }
 }

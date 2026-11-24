@@ -317,7 +317,7 @@ export type AabProtectRequest = {
   protectRouteAssets?: boolean;
 };
 
-export type TaskKind = "protect" | "ios_protect" | "sign" | "update";
+export type TaskKind = "protect" | "ios_protect" | "sign" | "channel_pack" | "update";
 export type TaskStatus = "running" | "succeeded" | "failed" | "cancelled";
 
 export type TaskLog = {
@@ -445,6 +445,24 @@ export const byosRequirements = {
 export type ByosConnectionCheck = { code: string; elapsedMs: number; httpStatus: number | null };
 export type ByosProfileInput = Omit<ByosProfile, "id"> & { id: string | null; apiKey: string | null };
 
+export type ChannelBatchRequest = {
+  taskId: string;
+  input: string;
+  channels: string[];
+  outputDir: string;
+  force: boolean;
+};
+
+export type ChannelArtifact = {
+  channel: string;
+  path: string;
+  bytes: number;
+};
+
+export type ChannelBatchResult = {
+  outputs: ChannelArtifact[];
+};
+
 export const api = {
   testByosConnection: (input: ByosProfileInput) => invoke<ByosConnectionCheck>("test_byos_connection", { input }),
   listByosProfiles: () => invoke<ByosProfiles>("list_byos_profiles"),
@@ -521,6 +539,11 @@ export const api = {
 	    certificateId: string;
 	    sharing?: SharingChoice | null;
 	  }) => invoke<void>("sign_apk", { request: args }),
+  channelGet: (apkPath: string) => invoke<string | null>("channel_get", { apkPath }),
+  channelReadFile: (path: string) => invoke<string[]>("channel_read_file", { path }),
+  channelBatch: (request: ChannelBatchRequest) =>
+    invoke<ChannelBatchResult>("channel_batch", { request }),
+  cancelChannelPack: () => invoke<void>("cancel_channel_pack"),
   getLatestTask: (kind: TaskKind) => invoke<TaskSnapshot | null>("get_latest_task", { kind }),
   listKeystoreAliases: (keystorePath: string, ksPass: string, ksType: string) =>
     invoke<string[]>("list_keystore_aliases", { keystorePath, ksPass, ksType }),

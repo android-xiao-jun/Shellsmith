@@ -110,6 +110,25 @@ CHECK_RESULT="$("$ROOT/target/release/shield" check-apk "$FINAL")"
 printf '%s\n' "$CHECK_RESULT" | grep -q '"already_protected":true'
 printf '%s\n' "$CHECK_RESULT" | grep -q '"is_signed":true'
 
+# 渠道包：先签名后写渠道，产物仍需通过 apksigner 校验且可回读渠道号。
+CHANNEL_DIR="$WORK/channels"
+CHANNELS_FILE="$WORK/channels.txt"
+printf 'oppo\nvivo\n' > "$CHANNELS_FILE"
+FINAL_HASH_BEFORE="$(hash_stream < "$FINAL")"
+"$ROOT/target/release/shield" channel batch \
+  --input "$FINAL" \
+  --channels-file "$CHANNELS_FILE" \
+  --output-dir "$CHANNEL_DIR" \
+  --force
+for channel in oppo vivo; do
+  CHANNEL_APK="$CHANNEL_DIR/$(basename "${FINAL%.apk}")_${channel}.apk"
+  test -f "$CHANNEL_APK"
+  java -jar "$ROOT/tools/apksigner.jar" verify --verbose "$CHANNEL_APK" >/dev/null
+  test "$("$ROOT/target/release/shield" channel get "$CHANNEL_APK")" = "$channel"
+  unzip -t "$CHANNEL_APK" >/dev/null
+done
+test "$(hash_stream < "$FINAL")" = "$FINAL_HASH_BEFORE"
+
 unzip -p "$FINAL" classes.dex > "$WORK/classes.dex"
 LC_ALL=C grep -a -q 'MSHD' "$WORK/classes.dex"
 ARM64_STUB_LIBRARIES="$(unzip -Z1 "$FINAL" | awk '$0 ~ /^lib\/arm64-v8a\/libmodule[a-z]+\.so$/')"

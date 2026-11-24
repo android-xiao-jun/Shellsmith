@@ -10,6 +10,7 @@ mod build_info;
 mod byos;
 mod cert_service;
 mod cert_store;
+mod channel_runner;
 mod error_report;
 mod failure_diagnostic;
 mod feedback;
@@ -409,6 +410,7 @@ fn get_latest_task(
     state.latest(match kind.as_str() {
         "sign" => TaskKind::Sign,
         "ios_protect" => TaskKind::IosProtect,
+        "channel_pack" => TaskKind::ChannelPack,
         _ => TaskKind::Protect,
     })
 }
@@ -556,6 +558,7 @@ fn main() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(CancelHandle(Arc::new(AtomicBool::new(false))))
+        .manage(channel_runner::ChannelCancelHandle::default())
         .manage(ios_runner::IosCancelHandle::default())
         .manage(telemetry::TelemetryRuntime::default())
         .manage(TaskManager::default())
@@ -608,6 +611,10 @@ fn main() {
             save_app_config,
             save_protect_defaults,
             sign_apk,
+            channel_runner::channel_get,
+            channel_runner::channel_read_file,
+            channel_runner::channel_batch,
+            channel_runner::cancel_channel_pack,
             application_sharing::commands::inspect_application_sharing,
             application_sharing::commands::release_application_inspection,
             application_sharing::commands::save_application_sharing,

@@ -178,6 +178,7 @@ GUI 自动维护的应用级配置固定使用 `config.toml`。证书列表、�
 | [docs/design/dex-code-separation.md](docs/design/dex-code-separation.md) | DEX 代码保护研究：结构/方法代码分离、内存重建、分片恢复与停止条件 |
 | [docs/design/toolchain-modernization.md](docs/design/toolchain-modernization.md) | 工具链轻量化与自动化：CLI 契约、CI/Gradle 集成、局部原生重写与回退边界 |
 | [docs/design/asset-protection.md](docs/design/asset-protection.md) | 可选资源保护：显式资源清单、应用侧读取接口、性能与兼容边界 |
+| [docs/design/channel-packaging.md](docs/design/channel-packaging.md) | 渠道包写入：APK Signing Block 格式、V2/V3 约束与验证边界 |
 | [docs/design/android-4.4-compatibility.md](docs/design/android-4.4-compatibility.md) | Android 4.4 工控兼容：双 NDK、ABI、运行时分流与验证方案 |
 | [docs/design/architecture.md](docs/design/architecture.md) | 完整目录结构、工具路径检测逻辑、构建产物路径 |
 | [docs/design/gui.md](docs/design/gui.md) | GUI 设计：唯一正式桌面 GUI、页面结构、签名配置与维护约束 |

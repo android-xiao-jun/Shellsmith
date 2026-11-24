@@ -48,6 +48,27 @@ pub(crate) struct KeystoreCheckOutput {
     pub error: Option<String>,
 }
 
+#[derive(Debug, Serialize)]
+pub(crate) struct ChannelGetOutput {
+    #[serde(rename = "type")]
+    kind: &'static str,
+    channel: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+pub(crate) struct ChannelResultOutput {
+    #[serde(rename = "type")]
+    kind: &'static str,
+    outputs: Vec<ChannelResultItem>,
+}
+
+#[derive(Debug, Serialize)]
+pub(crate) struct ChannelResultItem {
+    channel: String,
+    path: String,
+    bytes: u64,
+}
+
 pub(crate) fn done_event_json() -> String {
     serde_json::to_string(&DoneEvent { kind: "done" }).expect("序列化 done 事件失败")
 }
@@ -111,4 +132,27 @@ pub(crate) fn keystore_check_json(cert_fingerprint: String) -> String {
         error: None,
     })
     .expect("序列化 keystore 检查结果失败")
+}
+
+pub(crate) fn channel_get_json(channel: Option<&str>) -> String {
+    serde_json::to_string(&ChannelGetOutput {
+        kind: "channel",
+        channel: channel.map(str::to_string),
+    })
+    .expect("序列化渠道读取结果失败")
+}
+
+pub(crate) fn channel_result_json(outputs: &[shield_core::ChannelOutput]) -> String {
+    serde_json::to_string(&ChannelResultOutput {
+        kind: "channel_result",
+        outputs: outputs
+            .iter()
+            .map(|output| ChannelResultItem {
+                channel: output.channel.clone(),
+                path: output.path.display().to_string(),
+                bytes: output.bytes,
+            })
+            .collect(),
+    })
+    .expect("序列化渠道包结果失败")
 }

@@ -109,6 +109,17 @@ shield protect -i input.apk -o output.apk --exclude-abis armeabi,mips,mips64
 GUI 会在应用启动时检测一次本机 Java 环境，并将结果缓存到全局状态中；若未检测到完整 JDK 8+，或缺少 `keytool`，加固、签名、Alias 识别会直接阻断并给出明确提示。运行流程不依赖 `javac`。
 如果应用启动后你又安装或切换了 JDK，可在关于页手动点击“重新检测环境”刷新状态。
 
+### 渠道包
+
+**渠道包**页面用于给已签名的 APK 批量写入 Walle 兼容渠道号，不依赖外部 JDK 或 walle-cli：
+
+1. 选择已使用 V2/V3 签名的 APK。页面会显示当前渠道；没有 V2/V3 签名时无法写入。
+2. 在渠道列表中每行填写一个渠道名，或点击“导入 channels.txt”。渠道名不能包含控制字符、双引号或反斜杠，且不能重复。
+3. 确认输出目录（默认是 APK 同目录下的 `channels`）和是否覆盖同名渠道包。
+4. 开始打包后生成 `原文件名_渠道名.apk`，可在结果列表直接打开输出目录。
+
+渠道信息写入 APK Signing Block，不会破坏已有 V2/V3 签名，但会改变 APK 字节。写入渠道后不要再修改、重新签名或重新对齐 APK；如果原签名启用了 V4，原 `.idsig` 需要重新生成。
+
 ### iOS 源码工程加固
 
 iOS 完整构建要求 macOS、完整 Xcode、可用的 Apple Team 和 Provisioning Profile。Shellsmith 会自动发现常见位置的完整 Xcode，即使系统 `xcode-select` 暂时仍指向 Command Line Tools，也会对本次任务使用发现到的 Xcode；Windows/Linux 可以查看静态检查结果，但不能 Archive 或导出 IPA。
@@ -373,6 +384,32 @@ shield sign \
 
 启用 V4 时，签名成功后会保留与 APK 同名的 `<输出>.idsig`，用于增量安装；关闭 V4 时不会留下旧 `.idsig`。如果输出文件已存在，签名器会先写暂存文件，成功后再替换；签名、附件验证或最终替换失败时，旧 APK、旧保护报告和旧 `.idsig` 保持不变。输出文件不能是符号链接，遇到链接时会提示选择实际文件。自动签名任务在最终提交前会再次检查取消状态；取消成功后不会替换旧输出，提交完成后的迟到取消也不会删除已生成的新产物。
 
+### 渠道包
+
+渠道写入只要求 APK 已 V2/V3 签名，不需要 Java：
+
+```bash
+# 读取当前渠道号
+shield channel get protected-signed.apk
+
+# 按 channels.txt 批量生成 原文件名_渠道名.apk
+shield channel batch \
+  --input protected-signed.apk \
+  --channels-file channels.txt \
+  --output-dir build/channels
+
+# 覆盖已存在的同名渠道包
+shield channel batch \
+  --input protected-signed.apk \
+  --channels-file channels.txt \
+  --output-dir build/channels \
+  --force
+```
+
+`channels.txt` 每行一个渠道名，忽略空行和 UTF-8 BOM；重复或非法渠道会在写入前报错。默认输出目录是输入 APK 同目录下的 `channels`。`--json` 会逐渠道输出进度事件，并在末尾输出 `channel_result` 与 `done` 事件。
+
+渠道号写在 APK Signing Block 中，不会破坏 V2/V3 签名；写入后不得再修改、重新签名或对齐 APK。启用 V4 时原 `.idsig` 会失效，需要重新生成。
+
 ### CLI 配置文件
 
 CLI 人工配置建议固定命名为 `shield-cli.toml`，与 GUI 自动维护的 `config.toml` 完全独立。当前格式版本为 `1`：
@@ -397,7 +434,15 @@ v1 = true
 v2 = true
 v3 = true
 v4 = false
+
+[channel]
+input = "build/protected-signed.apk"
+channels_file = "channels.txt"
+output_dir = "build/channels"
+force = false
 ```
+
+`[channel]` 中的所有字段都可以被同名命令行参数覆盖，不包含任何密码或密钥材料。
 
 配置中的相对路径以配置文件所在目录为基准。命令行参数优先于配置文件：
 

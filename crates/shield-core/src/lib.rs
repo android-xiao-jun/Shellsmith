@@ -1,5 +1,6 @@
 pub mod apk_inspect;
 pub mod bundle_inspect;
+pub mod channel;
 mod dex_packer;
 #[cfg(test)]
 mod dex_research;
@@ -28,6 +29,11 @@ pub use apk_inspect::{
 };
 pub use bundle_inspect::{
     inspect_aab, validate_aab_for_module_processing, AabInspection, AabModuleInspection,
+};
+pub use channel::{
+    channel_output_filename, parse_channel_list, read_channel, validate_channel_name,
+    write_channel, write_channels, ChannelError, ChannelOutput, ChannelProgress, ChannelStage,
+    CHANNEL_BLOCK_ID,
 };
 pub use error::ShieldError;
 pub use fusion_contract::{

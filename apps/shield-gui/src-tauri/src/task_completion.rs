@@ -52,7 +52,9 @@ pub(crate) fn finish_task(
             telemetry::record_event(config, TelemetryEvent::SignSucceeded);
         }
         if let Err(error) = &result {
-            if is_executed_failure(error) {
+            if is_executed_failure(error)
+                && matches!(task.kind, TaskKind::Protect | TaskKind::Sign)
+            {
                 let (stage, context) = if task.kind == TaskKind::Protect {
                     (
                         telemetry::protect_failure_stage(&task.current_step, task.signing_started),

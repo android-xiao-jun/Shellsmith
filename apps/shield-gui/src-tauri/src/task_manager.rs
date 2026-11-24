@@ -12,6 +12,7 @@ pub(crate) enum TaskKind {
     Protect,
     IosProtect,
     Sign,
+    ChannelPack,
     Update,
 }
 
@@ -244,6 +245,7 @@ mod tests {
             TaskKind::Protect,
             TaskKind::IosProtect,
             TaskKind::Sign,
+            TaskKind::ChannelPack,
             TaskKind::Update,
         ] {
             assert!(super::tasks_conflict(
@@ -292,6 +294,10 @@ mod tests {
         assert_eq!(
             serde_json::to_string(&TaskKind::IosProtect).unwrap(),
             "\"ios_protect\""
+        );
+        assert_eq!(
+            serde_json::to_string(&TaskKind::ChannelPack).unwrap(),
+            "\"channel_pack\""
         );
         assert_eq!(
             serde_json::to_string(&TaskStatus::Succeeded).unwrap(),

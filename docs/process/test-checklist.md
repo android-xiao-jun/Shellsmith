@@ -13,6 +13,8 @@ bash tests/scripts/run-protect-e2e.sh
 
 脚本使用项目自有最小 Android 测试夹具，验证从源码 APK 到已签名加固产物的完整无设备链路。手动触发完整 CI 时，“Android 壳构建”任务也会执行该测试。
 
+脚本末尾同时验证渠道包写入：在已签名产物上批量生成 `oppo`、`vivo` 两个渠道包，逐个执行 `apksigner verify`、`shield channel get` 和 `unzip -t`，并确认源 APK 未被修改。修改 `crates/shield-core/src/channel.rs` 或 CLI `channel` 命令后必须重新执行。
+
 连接测试设备后执行以下命令，分别启动未加固双 DEX 基线，并以同一签名覆盖安装加固包。加固包需连续启动两次，覆盖首次解密和缓存命中路径；每次都必须观察到 `Application`、`Activity` 和 `classes2.dex` 中 `SecondaryMarker` 的成功标记：
 
 ```bash

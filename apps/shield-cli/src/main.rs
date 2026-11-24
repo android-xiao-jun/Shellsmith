@@ -9,8 +9,9 @@ mod config;
 use args::{Cli, Commands};
 use cli_json::error_event_json;
 use commands::{
-    run_check_aab, run_check_apk, run_check_ios, run_check_keystore, run_install_apks, run_protect,
-    run_protect_aab, run_protect_ios, run_protect_xop, run_sign,
+    run_channel_batch, run_channel_get, run_check_aab, run_check_apk, run_check_ios,
+    run_check_keystore, run_install_apks, run_protect, run_protect_aab, run_protect_ios,
+    run_protect_xop, run_sign,
 };
 use config::CliConfig;
 
@@ -36,6 +37,10 @@ fn execute(cli: Cli) -> Result<()> {
         Commands::ProtectXop(args) => run_protect_xop(args)?,
         Commands::ProtectIos(args) => run_protect_ios(args)?,
         Commands::Sign(args) => run_sign(config.merge_sign(args)?)?,
+        Commands::Channel(args) => match args.action {
+            args::ChannelAction::Get { apk, json } => run_channel_get(apk, json)?,
+            args::ChannelAction::Batch(batch) => run_channel_batch(config.merge_channel(batch)?)?,
+        },
         Commands::CheckApk { path, apksigner } => {
             let result = run_check_apk(path, apksigner)?;
             println!("{result}");

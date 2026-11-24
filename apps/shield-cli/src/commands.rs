@@ -20,10 +20,11 @@ use crate::args::{
     AiResistanceArg, EnvironmentPolicyArg, KeystoreTypeArg, ProtectAabArgs, ProtectIosArgs,
     ProtectXopArgs, ProtectionEngineArg, ProtectionProfileArg, XopProfileArg,
 };
-use crate::config::{ResolvedProtectArgs, ResolvedSignArgs};
+use crate::config::{ResolvedChannelArgs, ResolvedProtectArgs, ResolvedSignArgs};
 
 use crate::cli_json::{
-    apk_check_json, contract_event_json, done_event_json, keystore_check_json, progress_event_json,
+    apk_check_json, channel_get_json, channel_result_json, contract_event_json, done_event_json,
+    keystore_check_json, progress_event_json,
 };
 
 pub(crate) fn run_protect(args: ResolvedProtectArgs) -> Result<()> {
@@ -1428,6 +1429,76 @@ fn signing_step_message(step: SigningProgressStep) -> &'static str {
         SigningProgressStep::Sign => "写入 APK 签名",
         SigningProgressStep::Commit => "提交签名产物",
     }
+}
+
+pub(crate) fn run_channel_get(apk: PathBuf, json: bool) -> Result<()> {
+    let channel = shield_core::read_channel(&apk)?;
+    if json {
+        println!("{}", channel_get_json(channel.as_deref()));
+    } else if let Some(channel) = channel {
+        println!("{channel}");
+    } else {
+        println!("APK 未写入渠道号");
+    }
+    Ok(())
+}
+
+pub(crate) fn run_channel_batch(args: ResolvedChannelArgs) -> Result<()> {
+    let text = std::fs::read_to_string(&args.channels_file).with_context(|| {
+        format!("读取渠道列表失败: {}", args.channels_file.display())
+    })?;
+    let channels = shield_core::parse_channel_list(&text)?;
+    let json = args.json;
+    let outputs = shield_core::write_channels(
+        &args.input,
+        &args.output_dir,
+        &channels,
+        args.force,
+        |event| {
+            if !json {
+                return;
+            }
+            let step = match event.stage {
+                shield_core::ChannelStage::Check => "CheckApk",
+                shield_core::ChannelStage::Write => "WriteChannel",
+                shield_core::ChannelStage::Commit => "CommitChannel",
+            };
+            let message = match event.stage {
+                shield_core::ChannelStage::Check => "检查 APK 与渠道列表".to_string(),
+                shield_core::ChannelStage::Write => format!(
+                    "正在写入渠道 {}/{}：{}",
+                    event.index, event.total, event.channel
+                ),
+                shield_core::ChannelStage::Commit => {
+                    format!("已生成 {}", event.output.display())
+                }
+            };
+            println!("{}", progress_event_json(step, &message));
+            let _ = std::io::stdout().flush();
+        },
+        None,
+    )?;
+
+    if json {
+        println!("{}", channel_result_json(&outputs));
+        println!("{}", done_event_json());
+    } else {
+        for output in &outputs {
+            println!(
+                "{} {} -> {}",
+                "✓".green(),
+                output.channel,
+                output.path.display()
+            );
+        }
+        println!(
+            "{}",
+            format!("✓ 已生成 {} 个渠道包", outputs.len())
+                .green()
+                .bold()
+        );
+    }
+    Ok(())
 }
 
 pub(crate) fn run_check_apk(path: PathBuf, apksigner: Option<PathBuf>) -> Result<String> {
