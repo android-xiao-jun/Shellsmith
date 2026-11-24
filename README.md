@@ -34,7 +34,7 @@ Android 侧提供 APK/AAB 的 DEX 加密、证书绑定、PVM2 方法虚拟化�
 - **Android SO 加固**在严格保护模式下加密 APK/AAB 内符合条件的业务 `.so` 函数区域。见 [Android SO 加固](#android-so-加固)。
 - **iOS 源码保护**：在独立工作副本中接入 Swift Confidential 与 freeRASP，再用 `xcodebuild` 完成 Archive、导出和签名验证，原工程不被修改。
 - **加固签名一体化**：导入、新建和管理证书；加固后自动签名，也可独立签名。
-- **渠道包**：对已签名 APK 批量写入 Walle 兼容渠道号，产出 `原文件名_渠道名.apk`，不依赖外部 JDK 或 walle-cli。
+- **渠道包**：对已签名 APK 批量写入 Walle 兼容渠道号，产出 `原文件名_渠道名.apk`，不依赖外部 JDK 或 walle-cli。见[渠道包设计与 Android 接入](docs/design/channel-packaging.md)。
 - **加固前检查与失败诊断**：检查签名、已有加固、系统要求、ABI 等兼容信号；失败时给出脱敏诊断摘要，可预览后确认发送。
 - **少重复配置**：记住常用加固选项和证书选择，支持自定义输出目录与文件名，任务开始后固定本次配置。
 - **安装兼容**：处理 APK ZIP 对齐及常见 Native 库问题；标准模式与 Android 4.4 工控模式分开选择。
@@ -277,6 +277,7 @@ iOS balanced/strict 会让目标应用直接集成 freeRASP；其 `watcherMail`�
 | 需要了解 | 文档 |
 |---|---|
 | GUI 操作、签名证书、配置位置、CLI 用法 | [使用指南](docs/usage.md) |
+| 渠道包写入、V2/V3 约束与 Android 接入 | [渠道包设计](docs/design/channel-packaging.md) |
 | MCP Server、Agent 集成与工具清单 | [MCP Server](docs/mcp.md) |
 | 安装与运行问题 | [本地排障](docs/ops/troubleshooting.md) |
 | 从源码编译 | [构建指南](docs/ops/build.md)、[环境要求](docs/ops/environment.md) |

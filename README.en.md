@@ -34,6 +34,7 @@ A desktop GUI is available for Windows, macOS, and Linux, with Chinese and Engli
 - **Android SO protection** encrypts eligible function regions in application `.so` files packaged in an APK or AAB in strict mode. See [Android SO Protection](#android-so-protection).
 - **iOS source protection:** modify an isolated working copy with Swift Confidential and freeRASP, then archive, export, and verify it with `xcodebuild`. The original project is left unchanged.
 - **Integrated signing:** import, create, and manage certificates; sign protected output automatically or sign an APK independently.
+- **Channel packages:** stamp Walle-compatible channel identifiers onto signed APKs and produce `input_<channel>.apk` without an external JDK or walle-cli. See [Channel packaging and Android integration](docs/design/channel-packaging.md) (Chinese).
 - **Preflight checks and diagnostics:** inspect signatures, existing protection, system requirements, and ABIs; on failure, show a sanitized summary that can be previewed before submission.
 - **Reusable settings:** remember protection options and the certificate choice, customize output directory and filename, and freeze each task's configuration.
 - **Installation compatibility:** handle APK ZIP alignment and common native-library cases, with separate standard and Android 4.4 industrial modes.
@@ -274,6 +275,7 @@ The iOS balanced and strict profiles integrate freeRASP directly into the target
 | Topic | Documentation |
 |---|---|
 | GUI, certificates, configuration locations, and CLI | [Usage guide](docs/usage.md) |
+| Channel packaging, V2/V3 constraints, and Android integration | [Channel packaging](docs/design/channel-packaging.md) (Chinese) |
 | MCP server and agent integration | [MCP server](docs/mcp.md) (Chinese) |
 | Installation and runtime problems | [Troubleshooting](docs/ops/troubleshooting.md) |
 | Source builds | [Build guide](docs/ops/build.md), [environment requirements](docs/ops/environment.md) |
