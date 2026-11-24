@@ -5,8 +5,8 @@
   <p>离线 / 在线双密钥 · Android 与 iOS 加固 · 签名一体化</p>
   <p>简体中文 | <a href="README.en.md">English</a></p>
   <p>
-    <a href="https://github.com/kairowan/Shellsmith/releases/latest"><img src="https://img.shields.io/github/v/release/kairowan/Shellsmith?style=flat-square&label=%E6%9C%80%E6%96%B0%E7%89%88%E6%9C%AC&color=6366f1" alt="最新版本"></a>
-    <a href="https://github.com/kairowan/Shellsmith/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/kairowan/Shellsmith/ci.yml?branch=main&style=flat-square&label=CI" alt="CI"></a>
+    <a href="https://github.com/android-xiao-jun/Shellsmith/releases/latest"><img src="https://img.shields.io/github/v/release/android-xiao-jun/Shellsmith?style=flat-square&label=%E6%9C%80%E6%96%B0%E7%89%88%E6%9C%AC&color=6366f1" alt="最新版本"></a>
+    <a href="https://github.com/android-xiao-jun/Shellsmith/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/android-xiao-jun/Shellsmith/ci.yml?branch=main&style=flat-square&label=CI" alt="CI"></a>
     <a href="#许可证"><img src="https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-green?style=flat-square" alt="许可证"></a>
   </p>
 </div>
@@ -18,6 +18,12 @@ Android 侧提供 APK/AAB 的 DEX 加密、证书绑定、PVM2 方法虚拟化�
 提供 Windows、macOS、Linux 桌面 GUI（中英文界面）。从 1.11.0 起，发布页也提供 CLI 与本地 MCP 服务的独立下载包。
 
 > 仅用于保护你拥有合法权利的 Android 与 iOS 应用，请勿用于绕过第三方保护或其他未授权场景。
+
+> **Fork 说明**
+> 本仓库 fork 自 [kairowan/Shellsmith](https://github.com/kairowan/Shellsmith)，在上游基础上增加了 Walle 兼容渠道包生成能力。
+> - 上游同步：`git fetch upstream && git merge upstream/main`（首次需配置 upstream 远程）。
+> - 本 fork 的 Release、CI 徽标和 Tauri 自动更新均指向本仓库；自动更新使用独立签名密钥，与上游产物不互通。
+> - 渠道包实现主要位于 `crates/shield-core/src/channel.rs`、CLI `channel` 子命令和 GUI「渠道包」页面。同步上游时优先保留这些文件，其余冲突以上游实现为准。
 
 **快速导航** · [核心能力](#核心能力) · [快速开始](#快速开始) · [SO 加固](#android-so-加固) · [CLI 与 MCP](#cli-与-mcp) · [兼容性](#兼容性与限制) · [在线密钥（BYOS）](#byos-包外密钥) · [安全边界](#工作原理与安全边界) · [文档](#文档与开发)
 

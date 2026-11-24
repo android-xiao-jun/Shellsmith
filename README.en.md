@@ -5,8 +5,8 @@
   <p>Offline &amp; online keys · Android &amp; iOS hardening · Integrated signing</p>
   <p><a href="README.md">简体中文</a> | English</p>
   <p>
-    <a href="https://github.com/kairowan/Shellsmith/releases/latest"><img src="https://img.shields.io/github/v/release/kairowan/Shellsmith?style=flat-square&label=release&color=6366f1" alt="Latest release"></a>
-    <a href="https://github.com/kairowan/Shellsmith/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/kairowan/Shellsmith/ci.yml?branch=main&style=flat-square&label=CI" alt="CI"></a>
+    <a href="https://github.com/android-xiao-jun/Shellsmith/releases/latest"><img src="https://img.shields.io/github/v/release/android-xiao-jun/Shellsmith?style=flat-square&label=release&color=6366f1" alt="Latest release"></a>
+    <a href="https://github.com/android-xiao-jun/Shellsmith/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/android-xiao-jun/Shellsmith/ci.yml?branch=main&style=flat-square&label=CI" alt="CI"></a>
     <a href="#license"><img src="https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-green?style=flat-square" alt="License"></a>
   </p>
 </div>
@@ -18,6 +18,12 @@ On Android, Shellsmith provides DEX encryption and certificate binding for APK/A
 A desktop GUI is available for Windows, macOS, and Linux, with Chinese and English interfaces. Starting with 1.11.0, the CLI and local MCP server are also available as a separate download.
 
 > Use only with applications you own or are authorized to protect. Do not bypass third-party protections or use this tool for unauthorized purposes.
+
+> **Fork notice**
+> This repository is a fork of [kairowan/Shellsmith](https://github.com/kairowan/Shellsmith) and adds Walle-compatible channel package generation on top of upstream.
+> - Sync upstream with `git fetch upstream && git merge upstream/main` (configure the upstream remote first).
+> - Releases, CI badges, and Tauri auto-updates point to this repository. Auto-updates use a separate signing key and are not interchangeable with upstream artifacts.
+> - Channel packaging lives mainly in `crates/shield-core/src/channel.rs`, the CLI `channel` subcommand, and the GUI Channels page. Keep these files when syncing upstream; prefer upstream for unrelated conflicts.
 
 **Quick navigation** · [Capabilities](#core-capabilities) · [Quick Start](#quick-start) · [SO Protection](#android-so-protection) · [CLI and MCP](#cli-and-mcp) · [Compatibility](#compatibility-and-limitations) · [Online Keys (BYOS)](#byos-out-of-package-keys) · [Security Scope](#how-it-works-and-security-scope) · [Documentation](#documentation-and-development)
 
