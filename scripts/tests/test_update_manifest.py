@@ -56,6 +56,36 @@ class UpdateManifestTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "版本"):
                 generate_manifest(version, assets, signatures, "")
 
+    def test_清单地址跟随当前仓库(self):
+        version = "1.11.0"
+        repository = "android-xiao-jun/Shellsmith"
+        with tempfile.TemporaryDirectory() as directory:
+            signatures = Path(directory)
+            assets = []
+            names = [f"Shellsmith_{version}_{suffix}" for suffix in (
+                "macos_universal.app.tar.gz", "windows_x64_setup.exe", "linux_amd64.AppImage",
+            )]
+            signature = base64.b64encode(
+                f"untrusted comment: 测试\n占位\ntrusted comment: file:test\tversion:{version}\n占位\n".encode()
+            ).decode()
+            for name in names:
+                (signatures / (name + ".sig")).write_text(signature, encoding="utf-8")
+                for filename in [name, name + ".sig"]:
+                    assets.append({
+                        "name": filename,
+                        "size": 123,
+                        "state": "uploaded",
+                        "url": f"https://github.com/{repository}/releases/download/v{version}/{filename}",
+                    })
+            manifest = generate_manifest(
+                version, assets, signatures, "更新说明", repository=repository
+            )
+            self.assertEqual(
+                manifest["platforms"]["linux-x86_64"]["url"],
+                f"https://github.com/{repository}/releases/download/v{version}/"
+                f"Shellsmith_{version}_linux_amd64.AppImage",
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

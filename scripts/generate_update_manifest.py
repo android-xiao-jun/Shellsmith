@@ -4,14 +4,21 @@
 import argparse
 import base64
 import json
+import os
 import re
 from pathlib import Path
 from urllib.parse import quote, unquote
 
+DEFAULT_REPOSITORY = "kairowan/Shellsmith"
 
-def generate_manifest(version, assets, signatures, notes, *, draft_tag=None):
+
+def generate_manifest(
+    version, assets, signatures, notes, *, draft_tag=None, repository=DEFAULT_REPOSITORY
+):
     if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?", version):
         raise ValueError("版本号无效")
+    if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository):
+        raise ValueError("仓库标识无效")
     if draft_tag is not None and draft_tag != f"v{version}":
         raise ValueError("草稿版本与更新版本不匹配")
     prefix = f"Shellsmith_{version}"
@@ -24,7 +31,7 @@ def generate_manifest(version, assets, signatures, notes, *, draft_tag=None):
     by_name = {asset["name"]: asset for asset in assets}
     platforms = {}
     for platform, name in packages.items():
-        url = f"https://github.com/kairowan/Shellsmith/releases/download/v{quote(version, safe='')}/{quote(name, safe='')}"
+        url = f"https://github.com/{repository}/releases/download/v{quote(version, safe='')}/{quote(name, safe='')}"
         for filename, expected_url in [(name, url), (name + ".sig", url + ".sig")]:
             asset = by_name.get(filename)
             if not asset or asset.get("size", 0) <= 0 or asset.get("state") != "uploaded":
@@ -32,7 +39,7 @@ def generate_manifest(version, assets, signatures, notes, *, draft_tag=None):
             actual_url = unquote(asset.get("url", ""))
             # GitHub 草稿即使已有 tag，仍返回 untagged 临时地址；清单只写正式地址。
             draft_url = draft_tag is not None and re.fullmatch(
-                rf"https://github\.com/kairowan/Shellsmith/releases/download/untagged-[0-9a-f]+/{re.escape(filename)}",
+                rf"https://github\.com/{re.escape(repository)}/releases/download/untagged-[0-9a-f]+/{re.escape(filename)}",
                 actual_url,
             )
             if actual_url != unquote(expected_url) and not draft_url:
@@ -64,6 +71,7 @@ def main():
         args.version, release["assets"],
         args.signatures, args.notes.read_text(encoding="utf-8"),
         draft_tag=release["tagName"] if release.get("isDraft") is True else None,
+        repository=os.environ.get("GITHUB_REPOSITORY") or DEFAULT_REPOSITORY,
     )
     args.output.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
