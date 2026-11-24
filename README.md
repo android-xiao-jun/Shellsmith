@@ -128,10 +128,10 @@ xattr -rd com.apple.quarantine /Applications/Shellsmith.app
 ## 界面预览
 
 <p align="center">
-  <img src="docs/assets/screenshots/readme-protect-main.png" width="860" alt="Shellsmith 加固页示意">
+  <img src="docs/assets/screenshots/readme-channel-main.png" width="860" alt="Shellsmith 渠道包页面示意">
 </p>
 
-截图用于展示页面布局，具体选项以当前版本为准。更多页面与操作说明见[使用指南](docs/usage.md)。
+截图用于展示渠道包页面布局，具体选项以当前版本为准。更多页面与操作说明见[使用指南](docs/usage.md)。
 
 ## 兼容性与限制
 

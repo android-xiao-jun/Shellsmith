@@ -127,10 +127,10 @@ Call `shellsmith_version` to verify the connection and `shellsmith_check_apk` to
 ## Preview
 
 <p align="center">
-  <img src="docs/assets/screenshots/readme-protect-main.png" width="860" alt="Shellsmith protection page illustration">
+  <img src="docs/assets/screenshots/readme-channel-main.png" width="860" alt="Shellsmith channel package page illustration">
 </p>
 
-The screenshot illustrates the layout; available options depend on the current version. More screens and instructions are in the [usage guide](docs/usage.md).
+The screenshot illustrates the channel package page layout; available options depend on the current version. More screens and instructions are in the [usage guide](docs/usage.md).
 
 ## Compatibility and Limitations
 
