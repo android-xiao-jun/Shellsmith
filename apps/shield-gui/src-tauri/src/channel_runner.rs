@@ -138,7 +138,7 @@ pub(crate) async fn channel_batch(
         })
     })
     .await
-    .map_err(|err| ExecutionFailure::from(format!("后台任务执行失败: {err}")))?;
+    .map_err(|err| format!("后台任务执行失败: {err}"))?;
 
     let finish_result = match &result {
         Ok(_) => Ok(()),
