@@ -140,7 +140,7 @@ pub(crate) async fn channel_batch(
     .await
     .map_err(|err| format!("后台任务执行失败: {err}"))?;
 
-    let finish_result = match &result {
+    let finish_result: Result<(), ExecutionFailure> = match &result {
         Ok(_) => Ok(()),
         Err(error) => Err(error.clone()),
     };
