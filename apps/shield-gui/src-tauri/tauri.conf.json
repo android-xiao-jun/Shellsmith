@@ -64,8 +64,8 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEZGQjZGREMxMzUwNzJFMjAKUldRZ0xnYzF3ZjIyL3dvN1BwMmdrSGdsVFViRDRIYlB2U29NRkUxd0Ryb21LRkFaaHdFRGNZMGkK",
-      "endpoints": ["https://github.com/kairowan/Shellsmith/releases/latest/download/latest.json"],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDI0OTlEMzlEMDY5RjVEQkYKUldTL1haOEduZE9aSlBTcWVUaGhQQUpaaUhPMVRiRUVIRDdFV1RZd1JYNUpyOERsY3pGKytaazYK",
+      "endpoints": ["https://github.com/android-xiao-jun/Shellsmith/releases/latest/download/latest.json"],
       "requireSignedVersion": true,
       "windows": { "installMode": "passive" }
     }
